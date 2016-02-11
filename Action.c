@@ -148,6 +148,15 @@ static void tagAllChildren(Panel* panel, Process* parent) {
    }
 }
 
+static bool expandCollapseAll(Panel* panel) {
+   for (int i = 0; i < Panel_size(panel); i++) {
+      Process* p = (Process*) Panel_get(panel, i);
+      if(!p) return false;
+      p->showChildren = !p->showChildren;
+   }
+   return true;
+}
+
 static bool expandCollapse(Panel* panel) {
    Process* p = (Process*) Panel_getSelected(panel);
    if (!p) return false;
@@ -281,6 +290,14 @@ static Htop_Reaction actionCollapseIntoParent(State* st) {
       return HTOP_OK;
    }
    bool changed = collapseIntoParent(st->panel);
+   return changed ? HTOP_RECALCULATE : HTOP_OK;
+}
+
+static Htop_Reaction actionExpandOrCollapseAll(State *st) {
+   if (!st->settings->treeView) {
+      return HTOP_OK;
+   }
+   bool changed = expandCollapseAll(st->panel);
    return changed ? HTOP_RECALCULATE : HTOP_OK;
 }
 
@@ -596,5 +613,6 @@ void Action_setBindings(Htop_Action* keys) {
    keys['U'] = actionUntagAll;
    keys['c'] = actionTagAllChildren;
    keys['e'] = actionShowEnvScreen;
+   keys[KEY_F(12)] = actionExpandOrCollapseAll;
 }
 
